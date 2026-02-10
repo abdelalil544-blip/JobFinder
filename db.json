@@ -1,0 +1,39 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "firstName": "Sara",
+      "lastName": "Amrani",
+      "email": "sara@mail.com",
+      "password": "123456"
+    }
+  ],
+  "favoritesOffers": [
+    {
+      "id": 1,
+      "userId": 1,
+      "offerId": 12345,
+      "apiSource": "themuse",
+      "title": "Frontend Developer",
+      "company": "Acme",
+      "location": "Casablanca",
+      "url": "https://www.themuse.com/jobs/12345",
+      "datePublished": "2026-02-10T10:30:00Z"
+    }
+  ],
+  "applications": [
+    {
+      "id": 1,
+      "userId": 1,
+      "offerId": 12345,
+      "apiSource": "themuse",
+      "title": "Frontend Developer",
+      "company": "Acme",
+      "location": "Casablanca",
+      "url": "https://www.themuse.com/jobs/12345",
+      "status": "en_attente",
+      "notes": "Relancer dans 2 semaines.",
+      "dateAdded": "2026-02-10T10:30:00Z"
+    }
+  ]
+}
