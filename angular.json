@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
@@ -62,6 +62,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
+            "buildTarget": "JobFinder:build:development",
             "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
