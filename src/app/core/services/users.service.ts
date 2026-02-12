@@ -24,6 +24,14 @@ export class UsersService {
     return this.http.get<User[]>(`${this.apiUrl}?email=${encodeURIComponent(email)}`);
   }
 
+  getByCredentials(email: string, password: string): Observable<User[]> {
+    const encodedEmail = encodeURIComponent(email);
+    const encodedPassword = encodeURIComponent(password);
+    return this.http.get<User[]>(
+      `${this.apiUrl}?email=${encodedEmail}&password=${encodedPassword}`
+    );
+  }
+
   create(user: Omit<User, 'id'>): Observable<User> {
     return this.http.post<User>(this.apiUrl, user);
   }

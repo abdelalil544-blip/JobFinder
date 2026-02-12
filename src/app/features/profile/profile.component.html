@@ -1,0 +1,114 @@
+<section class="space-y-6">
+  <header class="space-y-2">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--teal-700)]">
+      Profil
+    </p>
+    <h1 class="font-display text-3xl text-[color:var(--ink-950)]">Votre espace candidat</h1>
+    <p class="text-sm text-[color:var(--ink-700)]">
+      Modifiez vos informations, votre mot de passe et vos preferences.
+    </p>
+  </header>
+
+  <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+    <div class="glass-card rounded-3xl p-6">
+      <h2 class="font-display text-xl text-[color:var(--ink-950)]">Informations</h2>
+      <form class="mt-4 grid gap-4 text-sm" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <label class="grid gap-2 font-semibold text-[color:var(--ink-700)]">
+          Prenom
+          <input
+            class="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm focus:border-[color:var(--teal-600)] focus:outline-none"
+            type="text"
+            formControlName="firstName"
+          />
+        </label>
+
+        <label class="grid gap-2 font-semibold text-[color:var(--ink-700)]">
+          Nom
+          <input
+            class="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm focus:border-[color:var(--teal-600)] focus:outline-none"
+            type="text"
+            formControlName="lastName"
+          />
+        </label>
+
+        <label class="grid gap-2 font-semibold text-[color:var(--ink-700)]">
+          Email
+          <input
+            class="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm focus:border-[color:var(--teal-600)] focus:outline-none"
+            type="email"
+            formControlName="email"
+          />
+        </label>
+
+        <label class="grid gap-2 font-semibold text-[color:var(--ink-700)]">
+          Nouveau mot de passe
+          <input
+            class="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm focus:border-[color:var(--teal-600)] focus:outline-none"
+            type="password"
+            formControlName="password"
+            placeholder="Laisser vide pour ne pas changer"
+          />
+        </label>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            class="rounded-2xl bg-[color:var(--teal-600)] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[color:var(--teal-700)]"
+            type="submit"
+          >
+            Enregistrer
+          </button>
+          <button
+            class="rounded-2xl border border-black/10 px-4 py-3 text-sm font-semibold text-[color:#b42318]"
+            type="button"
+            (click)="onDelete()"
+          >
+            Supprimer mon compte
+          </button>
+        </div>
+
+        <p class="text-sm text-[color:#b42318]" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <p class="text-sm text-[color:var(--teal-700)]" *ngIf="successMessage">
+          {{ successMessage }}
+        </p>
+      </form>
+    </div>
+
+    <div class="space-y-4">
+      <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--teal-700)]">
+          Navigation rapide
+        </p>
+        <h3 class="mt-2 font-display text-lg text-[color:var(--ink-950)]">Vos espaces</h3>
+        <p class="mt-2 text-sm text-[color:var(--ink-700)]">
+          Accedez a vos favoris et candidatures en un clic.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a
+            class="rounded-2xl bg-[color:var(--teal-600)] px-4 py-3 text-xs font-semibold text-white shadow-md transition hover:bg-[color:var(--teal-700)]"
+            routerLink="/favorites"
+          >
+            Voir mes favoris
+          </a>
+          <a
+            class="rounded-2xl border border-black/10 bg-white px-4 py-3 text-xs font-semibold text-[color:var(--ink-700)] shadow-sm transition hover:border-[color:var(--teal-600)]"
+            routerLink="/applications"
+          >
+            Suivre mes candidatures
+          </a>
+        </div>
+      </div>
+      <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--coral-500)]">
+          Rappel
+        </p>
+        <h3 class="mt-2 font-display text-lg text-[color:var(--ink-950)]">Securisez votre compte</h3>
+        <p class="mt-2 text-sm text-[color:var(--ink-700)]">
+          Changez votre mot de passe regulierement pour proteger vos donnees.
+        </p>
+      </div>
+      <div class="rounded-3xl bg-[color:var(--mint-100)] p-5 text-sm text-[color:var(--ink-700)]">
+        Prochaine etape: connectez vos favoris et candidatures a votre profil.
+      </div>
+    </div>
+  </div>
+</section>

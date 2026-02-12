@@ -1,0 +1,11 @@
+{
+  "/api/adzuna": {
+    "target": "https://api.adzuna.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/adzuna": "/v1/api/jobs"
+    },
+    "logLevel": "debug"
+  }
+}

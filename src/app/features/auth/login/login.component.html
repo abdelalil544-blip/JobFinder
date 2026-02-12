@@ -1,0 +1,69 @@
+<section class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+  <div class="space-y-6">
+    <span class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--teal-700)] shadow-sm">
+      Acces candidat
+    </span>
+    <h1 class="font-display text-4xl leading-tight text-[color:var(--ink-950)]">
+      Trouvez des offres claires, suivez vos candidatures.
+    </h1>
+    <p class="text-base text-[color:var(--ink-700)]">
+      JobFinder vous aide a centraliser vos recherches, organiser vos favoris et suivre vos
+      reponses en un seul endroit.
+    </p>
+    <div class="grid gap-3 text-sm text-[color:var(--ink-700)]">
+      <div class="flex items-start gap-3">
+        <span class="mt-1 h-2 w-2 rounded-full bg-[color:var(--teal-600)]"></span>
+        Recherche ciblee par titre et localisation
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="mt-1 h-2 w-2 rounded-full bg-[color:var(--coral-500)]"></span>
+        Suivi des candidatures et notes personnelles
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="mt-1 h-2 w-2 rounded-full bg-[color:var(--gold-500)]"></span>
+        Favoris synchronises avec votre compte
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card rounded-3xl p-8">
+    <h2 class="font-display text-2xl text-[color:var(--ink-950)]">Connexion</h2>
+    <p class="mt-2 text-sm text-[color:var(--ink-700)]">Accedez a votre tableau de bord.</p>
+
+    <form class="mt-6 grid gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <label class="grid gap-2 text-sm font-semibold text-[color:var(--ink-700)]">
+        Email
+        <input
+          class="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm focus:border-[color:var(--teal-600)] focus:outline-none"
+          type="email"
+          formControlName="email"
+          placeholder="email@exemple.com"
+        />
+      </label>
+
+      <label class="grid gap-2 text-sm font-semibold text-[color:var(--ink-700)]">
+        Mot de passe
+        <input
+          class="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm focus:border-[color:var(--teal-600)] focus:outline-none"
+          type="password"
+          formControlName="password"
+          placeholder="******"
+        />
+      </label>
+
+      <button
+        class="mt-2 rounded-2xl bg-[color:var(--teal-600)] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[color:var(--teal-700)]"
+        type="submit"
+      >
+        Se connecter
+      </button>
+
+      <p class="text-sm text-[color:#b42318]" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </form>
+
+    <p class="mt-6 text-sm text-[color:var(--ink-700)]">
+      Pas de compte ?
+      <a class="font-semibold text-[color:var(--teal-700)]" routerLink="/auth/register">Creez-en un</a>
+    </p>
+  </div>
+</section>
