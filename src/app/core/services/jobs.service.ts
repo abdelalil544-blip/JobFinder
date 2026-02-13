@@ -19,7 +19,7 @@ export class JobsService {
   private readonly baseUrl = environment.adzunaBaseUrl;
   private readonly RESULTS_PER_PAGE = 20;
   private readonly CACHE_TTL = 5 * 60 * 1000;
-  private readonly REQUEST_TIMEOUT = 15000;
+  private readonly REQUEST_TIMEOUT = 8000;
 
   private cache = new Map<string, { data: JobSearchResult; timestamp: number }>();
 
@@ -237,7 +237,7 @@ export class JobsService {
     let message = 'An unexpected error occurred. Please try again.';
 
     if (error.name === 'TimeoutError') {
-      message = 'The request is taking too long. Please try again.';
+      message = 'La requete est lente. Merci de reessayer dans quelques secondes.';
     } else if (error.status === 401) {
       message = 'Invalid API credentials. Please check your Adzuna app_id and app_key.';
     } else if (error.status === 403) {

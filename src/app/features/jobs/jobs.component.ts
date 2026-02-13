@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize, take } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, finalize, map, take } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { Job, JobSearchParams } from '../../core/models/job.model';
 import { JobsService } from '../../core/services/jobs.service';
@@ -13,7 +14,7 @@ import { JobCardComponent } from './job-card.component';
   imports: [CommonModule, ReactiveFormsModule, JobCardComponent],
   templateUrl: './jobs.component.html'
 })
-export class JobsComponent {
+export class JobsComponent implements OnInit, OnDestroy {
   readonly form;
 
   jobs: Job[] = [];
@@ -22,13 +23,20 @@ export class JobsComponent {
 
   currentPage = 1;
   totalPages = 1;
-  pageSize = 20;
+  pageSize = 5;
 
+  private readonly AUTO_SEARCH_DELAY = 400;
   private lastCriteria: JobSearchParams | null = null;
+  private lastRequestKey = '';
+  private activeRequest: Subscription | null = null;
+  private requestId = 0;
+  private autoSearchSub: Subscription | null = null;
+  private destroyed = false;
 
   constructor(
     private readonly formBuilder: FormBuilder,
-    private readonly jobsService: JobsService
+    private readonly jobsService: JobsService,
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.form = this.formBuilder.group({
       keywords: ['', [Validators.required]],
@@ -37,13 +45,45 @@ export class JobsComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.fetchJobs(1, this.buildInitialCriteria(), true, true);
+
+    this.autoSearchSub = this.form.valueChanges
+      .pipe(
+        debounceTime(this.AUTO_SEARCH_DELAY),
+        map(() => this.buildCriteriaFromForm(1)),
+        filter((criteria) => this.isCriteriaValid(criteria)),
+        map((criteria) => ({ criteria, key: this.requestKey(criteria) })),
+        distinctUntilChanged((a, b) => a.key === b.key)
+      )
+      .subscribe(({ criteria }) => {
+        this.fetchJobs(1, criteria);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    if (this.autoSearchSub) {
+      this.autoSearchSub.unsubscribe();
+      this.autoSearchSub = null;
+    }
+    if (this.activeRequest) {
+      this.activeRequest.unsubscribe();
+      this.activeRequest = null;
+    }
+  }
+
   onSearch(): void {
     if (this.form.invalid || !this.hasValidKeywords()) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.fetchJobs(1);
+    if (this.loading) {
+      return;
+    }
+
+    this.fetchJobs(1, this.buildCriteriaFromForm(1));
   }
 
   goToPage(page: number): void {
@@ -55,7 +95,11 @@ export class JobsComponent {
       return;
     }
 
-    this.fetchJobs(page);
+    const criteria = this.buildCriteriaFromLast(page);
+    if (!criteria) {
+      return;
+    }
+    this.fetchJobs(page, criteria);
   }
 
   get pages(): number[] {
@@ -75,31 +119,50 @@ export class JobsComponent {
     return job.id;
   }
 
-  private fetchJobs(page: number): void {
+  private fetchJobs(
+    page: number,
+    criteria?: JobSearchParams,
+    allowEmptyKeywords = false,
+    force = false
+  ): void {
+    const resolvedCriteria = criteria ?? this.buildCriteriaFromForm(page);
+    if (!this.isCriteriaValid(resolvedCriteria, allowEmptyKeywords)) {
+      return;
+    }
+    const requestKey = this.requestKey(resolvedCriteria);
+    if (!force && requestKey === this.lastRequestKey) {
+      return;
+    }
+    this.lastRequestKey = requestKey;
     this.errorMessage = '';
     this.loading = true;
+    this.requestId += 1;
+    const currentRequestId = this.requestId;
 
-    const { keywords, location, country } = this.form.getRawValue();
-    const criteria: JobSearchParams = {
-      keywords: (keywords ?? '').trim(),
-      location: (location ?? '').trim(),
-      country: country ?? 'fr',
-      page,
-      resultsPerPage: this.pageSize
-    };
+    if (this.activeRequest) {
+      this.activeRequest.unsubscribe();
+      this.activeRequest = null;
+    }
 
-    this.lastCriteria = criteria;
+    const requestCriteria = { ...resolvedCriteria, page };
+    this.lastCriteria = requestCriteria;
 
-    this.jobsService
-      .searchJobs(criteria)
+    this.activeRequest = this.jobsService
+      .searchJobs(requestCriteria)
       .pipe(
         take(1),
         finalize(() => {
-          this.loading = false;
+          if (this.requestId === currentRequestId) {
+            this.loading = false;
+            this.scheduleViewUpdate();
+          }
         })
       )
       .subscribe({
         next: (response) => {
+          if (this.requestId !== currentRequestId) {
+            return;
+          }
           const sorted = [...response.jobs].sort((a, b) => {
             const dateA = a.publicationDate ? new Date(a.publicationDate).getTime() : 0;
             const dateB = b.publicationDate ? new Date(b.publicationDate).getTime() : 0;
@@ -109,12 +172,17 @@ export class JobsComponent {
           this.jobs = sorted;
           this.totalPages = response.totalPages || 1;
           this.currentPage = response.currentPage || page;
+          this.scheduleViewUpdate();
         },
         error: (error: { message?: string }) => {
+          if (this.requestId !== currentRequestId) {
+            return;
+          }
           this.errorMessage = error?.message || 'Impossible de charger les offres.';
           this.jobs = [];
           this.totalPages = 1;
           this.currentPage = 1;
+          this.scheduleViewUpdate();
         }
       });
   }
@@ -122,5 +190,71 @@ export class JobsComponent {
   private hasValidKeywords(): boolean {
     const { keywords } = this.form.getRawValue();
     return !!(keywords ?? '').trim();
+  }
+
+  private isCriteriaValid(criteria: JobSearchParams, allowEmptyKeywords = false): boolean {
+    const hasCountry = !!(criteria.country ?? '').trim();
+    const hasKeywords = !!(criteria.keywords ?? '').trim();
+    return hasCountry && (allowEmptyKeywords || hasKeywords);
+  }
+
+  private buildCriteriaFromForm(page: number): JobSearchParams {
+    const { keywords, location, country } = this.form.getRawValue();
+    return {
+      keywords: (keywords ?? '').trim(),
+      location: (location ?? '').trim(),
+      country: country ?? 'fr',
+      page,
+      resultsPerPage: this.pageSize,
+      sortBy: 'date'
+    };
+  }
+
+  private buildInitialCriteria(): JobSearchParams {
+    const { location, country } = this.form.getRawValue();
+    return {
+      location: (location ?? '').trim(),
+      country: country ?? 'fr',
+      page: 1,
+      resultsPerPage: this.pageSize,
+      sortBy: 'date'
+    };
+  }
+
+  private buildCriteriaFromLast(page: number): JobSearchParams | null {
+    if (!this.lastCriteria) {
+      return null;
+    }
+    return {
+      ...this.lastCriteria,
+      page
+    };
+  }
+
+  private requestKey(criteria: JobSearchParams): string {
+    return JSON.stringify({
+      keywords: criteria.keywords ?? '',
+      location: criteria.location ?? '',
+      country: criteria.country ?? '',
+      page: criteria.page ?? 1,
+      resultsPerPage: criteria.resultsPerPage ?? this.pageSize,
+      category: criteria.category ?? '',
+      sortBy: criteria.sortBy ?? '',
+      contractType: criteria.contractType ?? '',
+      contractTime: criteria.contractTime ?? '',
+      salaryMin: criteria.salaryMin ?? ''
+    });
+  }
+
+  private scheduleViewUpdate(): void {
+    if (this.destroyed) {
+      return;
+    }
+    Promise.resolve().then(() => {
+      if (this.destroyed) {
+        return;
+      }
+      this.cdr.detectChanges();
+    });
   }
 }

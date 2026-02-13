@@ -52,8 +52,9 @@
       <button
         class="h-[52px] rounded-2xl bg-[color:var(--teal-600)] px-5 text-sm font-semibold text-white shadow-lg transition hover:bg-[color:var(--teal-700)]"
         type="submit"
+        [disabled]="loading"
       >
-        Rechercher
+        {{ loading ? 'Recherche en cours...' : 'Rechercher' }}
       </button>
     </form>
 
