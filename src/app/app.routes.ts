@@ -5,7 +5,7 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'auth/login',
+    redirectTo: 'jobs',
     pathMatch: 'full'
   },
   {
@@ -20,7 +20,6 @@ export const routes: Routes = [
   },
   {
     path: 'jobs',
-    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/jobs/jobs.component').then((m) => m.JobsComponent)
   },
@@ -46,6 +45,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'auth/login'
+    redirectTo: 'jobs'
   }
 ];

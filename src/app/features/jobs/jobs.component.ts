@@ -39,14 +39,14 @@ export class JobsComponent implements OnInit, OnDestroy {
     private readonly cdr: ChangeDetectorRef
   ) {
     this.form = this.formBuilder.group({
-      keywords: ['', [Validators.required]],
+      keywords: [''],
       location: [''],
       country: ['fr', [Validators.required]]
     });
   }
 
   ngOnInit(): void {
-    this.fetchJobs(1, this.buildInitialCriteria(), true, true);
+    this.fetchJobs(1, this.buildInitialCriteria(), true);
 
     this.autoSearchSub = this.form.valueChanges
       .pipe(
@@ -74,7 +74,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   }
 
   onSearch(): void {
-    if (this.form.invalid || !this.hasValidKeywords()) {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
@@ -122,11 +122,10 @@ export class JobsComponent implements OnInit, OnDestroy {
   private fetchJobs(
     page: number,
     criteria?: JobSearchParams,
-    allowEmptyKeywords = false,
     force = false
   ): void {
     const resolvedCriteria = criteria ?? this.buildCriteriaFromForm(page);
-    if (!this.isCriteriaValid(resolvedCriteria, allowEmptyKeywords)) {
+    if (!this.isCriteriaValid(resolvedCriteria)) {
       return;
     }
     const requestKey = this.requestKey(resolvedCriteria);
@@ -187,15 +186,9 @@ export class JobsComponent implements OnInit, OnDestroy {
       });
   }
 
-  private hasValidKeywords(): boolean {
-    const { keywords } = this.form.getRawValue();
-    return !!(keywords ?? '').trim();
-  }
-
-  private isCriteriaValid(criteria: JobSearchParams, allowEmptyKeywords = false): boolean {
+  private isCriteriaValid(criteria: JobSearchParams): boolean {
     const hasCountry = !!(criteria.country ?? '').trim();
-    const hasKeywords = !!(criteria.keywords ?? '').trim();
-    return hasCountry && (allowEmptyKeywords || hasKeywords);
+    return hasCountry;
   }
 
   private buildCriteriaFromForm(page: number): JobSearchParams {
