@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { EMPTY, finalize, switchMap, take } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
 import { ApplicationsService } from '../../core/services/applications.service';
-import { FavoritesService } from '../../core/services/favorites.service';
 import { Job } from '../../core/models/job.model';
 
 @Component({
@@ -46,12 +45,13 @@ import { Job } from '../../core/models/job.model';
         <span>Publie le {{ job.publicationDate | date: 'mediumDate' }}</span>
         <div class="flex flex-wrap items-center gap-2">
           <button
+            *ngIf="isAuthenticated"
             class="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[color:var(--ink-700)] transition hover:border-[color:var(--teal-600)] disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
-            [disabled]="addingFavorite"
-            (click)="addToFavorites()"
+            [disabled]="favoritePending || isFavorite"
+            (click)="requestAddFavorite()"
           >
-            {{ addingFavorite ? 'Ajout...' : 'Favoris' }}
+            {{ favoritePending ? 'Ajout...' : isFavorite ? 'Deja en favoris' : 'Favoris' }}
           </button>
           <button
             class="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[color:var(--ink-700)] transition hover:border-[color:var(--teal-600)] disabled:cursor-not-allowed disabled:opacity-50"
@@ -76,14 +76,17 @@ import { Job } from '../../core/models/job.model';
 })
 export class JobCardComponent {
   @Input({ required: true }) job!: Job;
+  @Input() isAuthenticated = false;
+  @Input() isFavorite = false;
+  @Input() favoritePending = false;
+  @Output() favoriteRequested = new EventEmitter<void>();
+
   actionMessage = '';
   errorMessage = '';
-  addingFavorite = false;
   addingApplication = false;
 
   constructor(
     private readonly authService: AuthService,
-    private readonly favoritesService: FavoritesService,
     private readonly applicationsService: ApplicationsService,
     private readonly router: Router
   ) {}
@@ -95,67 +98,11 @@ export class JobCardComponent {
     window.open(this.job.landingPageUrl, '_blank', 'noopener');
   }
 
-  addToFavorites(): void {
-    if (this.addingFavorite) {
+  requestAddFavorite(): void {
+    if (!this.isAuthenticated || this.isFavorite || this.favoritePending) {
       return;
     }
-
-    const currentUser = this.authService.currentUser;
-    if (!currentUser) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
-
-    const offerId = this.toOfferId();
-    if (offerId === null) {
-      this.errorMessage = "Impossible d'ajouter cette offre aux favoris.";
-      this.actionMessage = '';
-      return;
-    }
-
-    this.errorMessage = '';
-    this.actionMessage = '';
-    this.addingFavorite = true;
-
-    this.favoritesService
-      .getByUser(currentUser.id)
-      .pipe(
-        take(1),
-        switchMap((favorites) => {
-          const alreadyAdded = favorites.some(
-            (favorite) => favorite.offerId === offerId && favorite.apiSource === 'themuse'
-          );
-
-          if (alreadyAdded) {
-            this.actionMessage = 'Cette offre est deja dans vos favoris.';
-            return EMPTY;
-          }
-
-          return this.favoritesService.create({
-            userId: currentUser.id,
-            offerId,
-            apiSource: 'themuse',
-            title: this.job.title,
-            company: this.job.company.name,
-            location: this.job.location,
-            url: this.job.landingPageUrl,
-            datePublished: this.job.publicationDate
-          });
-        }),
-        finalize(() => {
-          this.addingFavorite = false;
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.actionMessage = 'Offre ajoutee aux favoris.';
-          this.errorMessage = '';
-        },
-        error: (error: Error) => {
-          this.errorMessage = error.message || "Impossible d'ajouter cette offre aux favoris.";
-          this.actionMessage = '';
-        }
-      });
+    this.favoriteRequested.emit();
   }
 
   addToApplications(): void {

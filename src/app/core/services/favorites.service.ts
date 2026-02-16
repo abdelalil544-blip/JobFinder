@@ -12,7 +12,7 @@ export class FavoritesService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getByUser(userId: number): Observable<FavoriteOffer[]> {
+  getByUser(userId: number | string): Observable<FavoriteOffer[]> {
     return this.http.get<FavoriteOffer[]>(`${this.apiUrl}?userId=${userId}`);
   }
 
@@ -20,7 +20,7 @@ export class FavoritesService {
     return this.http.post<FavoriteOffer>(this.apiUrl, favorite);
   }
 
-  delete(id: number): Observable<void> {
+  delete(id: number | string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

@@ -1,6 +1,6 @@
 export interface FavoriteOffer {
-  id: number;
-  userId: number;
+  id: number | string;
+  userId: number | string;
   offerId: number;
   apiSource: 'themuse';
   title: string;

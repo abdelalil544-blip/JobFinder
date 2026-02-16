@@ -1,11 +1,18 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+﻿import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { Router, RouterLink } from '@angular/router';
-import { take } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { FavoriteOffer } from '../../core/models/favorite-offer.model';
 import { AuthService } from '../../core/services/auth.service';
-import { FavoritesService } from '../../core/services/favorites.service';
+import * as FavoritesActions from '../../store/favorites/favorites.actions';
+import {
+  selectFavoritesError,
+  selectFavoritesItems,
+  selectFavoritesLoading,
+  selectRemovingFavoriteIds
+} from '../../store/favorites/favorites.selectors';
 
 @Component({
   selector: 'app-favorites',
@@ -46,13 +53,14 @@ import { FavoritesService } from '../../core/services/favorites.service';
       </header>
 
       <p class="text-sm text-[color:#b42318]" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <p class="text-sm text-[color:var(--ink-700)]" *ngIf="loading">Chargement des favoris...</p>
 
       <div class="grid gap-5 md:grid-cols-2">
         <div class="glass-card rounded-3xl p-5" *ngFor="let offer of favorites; trackBy: trackById">
           <div class="flex items-center justify-between">
             <div>
               <h2 class="font-display text-lg text-[color:var(--ink-950)]">{{ offer.title }}</h2>
-              <p class="text-sm text-[color:var(--ink-700)]">{{ offer.company }} � {{ offer.location }}</p>
+              <p class="text-sm text-[color:var(--ink-700)]">{{ offer.company }} · {{ offer.location }}</p>
             </div>
             <span class="rounded-full bg-[color:var(--mint-100)] px-3 py-1 text-xs font-semibold text-[color:var(--teal-700)]">
               {{ offer.apiSource }}
@@ -71,18 +79,19 @@ import { FavoritesService } from '../../core/services/favorites.service';
               Voir l'offre
             </button>
             <button
-              class="rounded-2xl border border-black/10 px-4 py-2 text-xs font-semibold text-[color:var(--ink-700)]"
+              class="rounded-2xl border border-black/10 px-4 py-2 text-xs font-semibold text-[color:var(--ink-700)] disabled:cursor-not-allowed disabled:opacity-50"
               type="button"
+              [disabled]="isRemoving(offer)"
               (click)="remove(offer)"
             >
-              Retirer
+              {{ isRemoving(offer) ? 'Suppression...' : 'Retirer' }}
             </button>
           </div>
         </div>
 
         <div
           class="rounded-3xl border border-dashed border-black/20 bg-white/60 p-6 text-center text-sm text-[color:var(--ink-700)]"
-          *ngIf="favorites.length === 0 && !errorMessage"
+          *ngIf="favorites.length === 0 && !errorMessage && !loading"
         >
           Les prochaines offres en favoris apparaitront ici.
         </div>
@@ -90,29 +99,49 @@ import { FavoritesService } from '../../core/services/favorites.service';
     </section>
   `
 })
-export class FavoritesComponent {
+export class FavoritesComponent implements OnInit, OnDestroy {
   favorites: FavoriteOffer[] = [];
+  loading = false;
   errorMessage = '';
-
-  private readonly userId: number;
+  private removingIdsSet = new Set<string>();
+  private readonly subscriptions: Subscription[] = [];
 
   constructor(
-    private readonly favoritesService: FavoritesService,
     private readonly authService: AuthService,
-    private readonly router: Router
-  ) {
+    private readonly router: Router,
+    private readonly store: Store
+  ) {}
+
+  ngOnInit(): void {
     const currentUser = this.authService.currentUser;
     if (!currentUser) {
-      this.userId = 0;
       this.router.navigate(['/auth/login']);
       return;
     }
 
-    this.userId = currentUser.id;
-    this.loadFavorites();
+    this.store.dispatch(FavoritesActions.loadFavorites({ userId: currentUser.id }));
+
+    this.subscriptions.push(
+      this.store.select(selectFavoritesItems).subscribe((favorites) => {
+        this.favorites = favorites;
+      }),
+      this.store.select(selectFavoritesLoading).subscribe((loading) => {
+        this.loading = loading;
+      }),
+      this.store.select(selectFavoritesError).subscribe((error) => {
+        this.errorMessage = error ?? '';
+      }),
+      this.store.select(selectRemovingFavoriteIds).subscribe((ids) => {
+        this.removingIdsSet = new Set(ids.map((id) => String(id)));
+      })
+    );
   }
 
-  trackById(_: number, offer: FavoriteOffer): number {
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
+  }
+
+  trackById(_: number, offer: FavoriteOffer): number | string {
     return offer.id;
   }
 
@@ -124,32 +153,10 @@ export class FavoritesComponent {
   }
 
   remove(offer: FavoriteOffer): void {
-    this.errorMessage = '';
-    this.favoritesService
-      .delete(offer.id)
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.favorites = this.favorites.filter((item) => item.id !== offer.id);
-        },
-        error: (error: Error) => {
-          this.errorMessage = error.message;
-        }
-      });
+    this.store.dispatch(FavoritesActions.removeFavorite({ favoriteId: offer.id }));
   }
 
-  private loadFavorites(): void {
-    this.errorMessage = '';
-    this.favoritesService
-      .getByUser(this.userId)
-      .pipe(take(1))
-      .subscribe({
-        next: (favorites) => {
-          this.favorites = favorites;
-        },
-        error: (error: Error) => {
-          this.errorMessage = error.message;
-        }
-      });
+  isRemoving(offer: FavoriteOffer): boolean {
+    return this.removingIdsSet.has(String(offer.id));
   }
 }

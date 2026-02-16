@@ -19,6 +19,17 @@
       "location": "Casablanca",
       "url": "https://www.themuse.com/jobs/12345",
       "datePublished": "2026-02-10T10:30:00Z"
+    },
+    {
+      "id": "ddd0",
+      "userId": "1",
+      "offerId": 5631728175,
+      "apiSource": "themuse",
+      "title": "Responsable de Location H/F Hallennes-lez-Haubourdin",
+      "company": "LOXAM",
+      "location": "France",
+      "url": "https://www.adzuna.fr/details/5631728175?utm_medium=api&utm_source=15fb0370",
+      "datePublished": "2026-02-16T11:58:21Z"
     }
   ],
   "applications": [
@@ -34,6 +45,18 @@
       "status": "en_attente",
       "notes": "Relancer dans 2 semaines.",
       "dateAdded": "2026-02-10T10:30:00Z"
+    },
+    {
+      "id": "5fe9",
+      "userId": "1",
+      "offerId": 5631728175,
+      "apiSource": "themuse",
+      "title": "Responsable de Location H/F Hallennes-lez-Haubourdin",
+      "company": "LOXAM",
+      "location": "France",
+      "url": "https://www.adzuna.fr/details/5631728175?utm_medium=api&utm_source=15fb0370",
+      "status": "en_attente",
+      "dateAdded": "2026-02-16T11:08:30.507Z"
     }
   ]
 }

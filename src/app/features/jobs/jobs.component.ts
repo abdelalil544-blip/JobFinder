@@ -1,11 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Store } from '@ngrx/store';
 import { debounceTime, distinctUntilChanged, filter, finalize, map, take } from 'rxjs';
 import { Subscription } from 'rxjs';
 
 import { Job, JobSearchParams } from '../../core/models/job.model';
+import { PublicUser } from '../../core/models/user.model';
+import { AuthService } from '../../core/services/auth.service';
 import { JobsService } from '../../core/services/jobs.service';
+import * as FavoritesActions from '../../store/favorites/favorites.actions';
+import {
+  selectAddingOfferIds,
+  selectFavoriteOfferIds
+} from '../../store/favorites/favorites.selectors';
 import { JobCardComponent } from './job-card.component';
 
 @Component({
@@ -24,6 +32,9 @@ export class JobsComponent implements OnInit, OnDestroy {
   currentPage = 1;
   totalPages = 1;
   pageSize = 5;
+  currentUser: PublicUser | null = null;
+  private favoriteOfferIdsSet = new Set<number>();
+  private addingOfferIdsSet = new Set<number>();
 
   private readonly AUTO_SEARCH_DELAY = 400;
   private lastCriteria: JobSearchParams | null = null;
@@ -31,12 +42,17 @@ export class JobsComponent implements OnInit, OnDestroy {
   private activeRequest: Subscription | null = null;
   private requestId = 0;
   private autoSearchSub: Subscription | null = null;
+  private authSub: Subscription | null = null;
+  private favoriteIdsSub: Subscription | null = null;
+  private addingOfferIdsSub: Subscription | null = null;
   private destroyed = false;
 
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly jobsService: JobsService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly authService: AuthService,
+    private readonly store: Store
   ) {
     this.form = this.formBuilder.group({
       keywords: [''],
@@ -46,6 +62,26 @@ export class JobsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.authSub = this.authService.currentUser$
+      .pipe(distinctUntilChanged((a, b) => a?.id === b?.id))
+      .subscribe((user) => {
+        this.currentUser = user;
+
+        if (user) {
+          this.store.dispatch(FavoritesActions.loadFavorites({ userId: user.id }));
+        } else {
+          this.store.dispatch(FavoritesActions.clearFavorites());
+        }
+      });
+
+    this.favoriteIdsSub = this.store.select(selectFavoriteOfferIds).subscribe((offerIds) => {
+      this.favoriteOfferIdsSet = new Set(offerIds);
+    });
+
+    this.addingOfferIdsSub = this.store.select(selectAddingOfferIds).subscribe((offerIds) => {
+      this.addingOfferIdsSet = new Set(offerIds);
+    });
+
     this.fetchJobs(1, this.buildInitialCriteria(), true);
 
     this.autoSearchSub = this.form.valueChanges
@@ -66,6 +102,18 @@ export class JobsComponent implements OnInit, OnDestroy {
     if (this.autoSearchSub) {
       this.autoSearchSub.unsubscribe();
       this.autoSearchSub = null;
+    }
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+      this.authSub = null;
+    }
+    if (this.favoriteIdsSub) {
+      this.favoriteIdsSub.unsubscribe();
+      this.favoriteIdsSub = null;
+    }
+    if (this.addingOfferIdsSub) {
+      this.addingOfferIdsSub.unsubscribe();
+      this.addingOfferIdsSub = null;
     }
     if (this.activeRequest) {
       this.activeRequest.unsubscribe();
@@ -117,6 +165,43 @@ export class JobsComponent implements OnInit, OnDestroy {
 
   trackById(_: number, job: Job): string {
     return job.id;
+  }
+
+  onAddFavorite(job: Job): void {
+    if (!this.currentUser) {
+      return;
+    }
+
+    const offerId = this.toOfferId(job);
+    if (offerId === null || this.favoriteOfferIdsSet.has(offerId)) {
+      return;
+    }
+
+    this.store.dispatch(
+      FavoritesActions.addFavorite({
+        userId: this.currentUser.id,
+        favorite: {
+          userId: this.currentUser.id,
+          offerId,
+          apiSource: 'themuse',
+          title: job.title,
+          company: job.company.name,
+          location: job.location,
+          url: job.landingPageUrl,
+          datePublished: job.publicationDate
+        }
+      })
+    );
+  }
+
+  isFavorite(job: Job): boolean {
+    const offerId = this.toOfferId(job);
+    return offerId !== null && this.favoriteOfferIdsSet.has(offerId);
+  }
+
+  isAddingFavorite(job: Job): boolean {
+    const offerId = this.toOfferId(job);
+    return offerId !== null && this.addingOfferIdsSet.has(offerId);
   }
 
   private fetchJobs(
@@ -237,6 +322,11 @@ export class JobsComponent implements OnInit, OnDestroy {
       contractTime: criteria.contractTime ?? '',
       salaryMin: criteria.salaryMin ?? ''
     });
+  }
+
+  private toOfferId(job: Job): number | null {
+    const parsedId = Number(job.id);
+    return Number.isFinite(parsedId) ? parsedId : null;
   }
 
   private scheduleViewUpdate(): void {
