@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { take } from 'rxjs';
@@ -13,8 +13,8 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent {
-  errorMessage = '';
-  successMessage = '';
+  errorMessage = signal('');
+  successMessage = signal('');
 
   readonly form;
 
@@ -48,8 +48,8 @@ export class ProfileComponent {
   }
 
   onSubmit(): void {
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.errorMessage.set('');
+    this.successMessage.set('');
 
     if (this.form.invalid || !this.userId) {
       this.form.markAllAsTouched();
@@ -69,23 +69,23 @@ export class ProfileComponent {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.successMessage = 'Profil mis a jour.';
+          this.successMessage.set('Profil mis à jour avec succès.');
         },
         error: (error: Error) => {
-          this.errorMessage = error.message;
+          this.errorMessage.set(error.message);
         }
       });
   }
 
   onDelete(): void {
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.errorMessage.set('');
+    this.successMessage.set('');
 
     if (!this.userId) {
       return;
     }
 
-    const confirmed = window.confirm('Voulez-vous supprimer votre compte ?');
+    const confirmed = window.confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.');
     if (!confirmed) {
       return;
     }
@@ -96,7 +96,7 @@ export class ProfileComponent {
       .subscribe({
         next: () => this.router.navigate(['/auth/register']),
         error: (error: Error) => {
-          this.errorMessage = error.message;
+          this.errorMessage.set(error.message);
         }
       });
   }

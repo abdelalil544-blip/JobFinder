@@ -12,65 +12,75 @@ import { Job } from '../../core/models/job.model';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <article class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm">
-      <div class="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--teal-700)]">
+    <article class="glass-card group flex h-full flex-col overflow-hidden rounded-[2rem] p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+      <div class="mb-4 flex items-start justify-between">
+        <div class="flex-1">
+          <p class="text-xs font-semibold uppercase tracking-wider text-[color:var(--teal-700)]">
             {{ job.company.name }}
           </p>
-          <h3 class="mt-2 font-display text-xl text-[color:var(--ink-950)]">
+          <h3 class="mt-1 font-display text-xl leading-tight text-[color:var(--ink-950)] group-hover:text-[color:var(--teal-600)] transition-colors">
             {{ job.title }}
           </h3>
         </div>
-        <span class="rounded-full bg-[color:var(--mint-100)] px-3 py-1 text-xs font-semibold text-[color:var(--teal-700)]">
+      </div>
+
+      <div class="mb-4 flex flex-wrap gap-2 text-[10px]">
+        <span class="inline-flex items-center rounded-full bg-[color:var(--mint-100)] px-2.5 py-1 font-medium text-[color:var(--teal-700)]">
+          <svg class="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           {{ job.location }}
+        </span>
+        <span *ngIf="job.type" class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 font-medium text-blue-700">
+          {{ job.type }}
         </span>
       </div>
 
-      <p class="mt-3 text-sm text-[color:var(--ink-700)]">
+      <p class="mb-6 line-clamp-3 text-sm leading-relaxed text-[color:var(--ink-700)]">
         {{ job.shortDescription || job.description }}
       </p>
 
-      <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-[color:var(--ink-500)]">
-        <span *ngIf="job.salary">Salaire: {{ job.salary }}</span>
-        <span *ngIf="job.type">Type: {{ job.type }}</span>
-        <span *ngIf="job.contractTime">Temps: {{ job.contractTime }}</span>
-        <span *ngIf="job.level">Niveau: {{ job.level }}</span>
-      </div>
+      <div class="mt-auto pt-4 border-t border-black/5">
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[10px] font-medium uppercase tracking-wider text-[color:var(--ink-400)]">
+              {{ job.publicationDate | date: 'mediumDate' }}
+            </span>
+            <span *ngIf="job.salary" class="text-xs font-semibold text-[color:var(--teal-600)]">
+              {{ job.salary }}
+            </span>
+          </div>
 
-      <p class="mt-4 text-xs text-[color:#b42318]" *ngIf="errorMessage()">{{ errorMessage() }}</p>
-      <p class="mt-4 text-xs text-[color:var(--teal-700)]" *ngIf="actionMessage()">{{ actionMessage() }}</p>
-
-      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[color:var(--ink-500)]">
-        <span>Publie le {{ job.publicationDate | date: 'mediumDate' }}</span>
-        <div class="flex flex-wrap items-center gap-2">
-          <button
-            *ngIf="isAuthenticated"
-            class="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[color:var(--ink-700)] transition hover:border-[color:var(--teal-600)] disabled:cursor-not-allowed disabled:opacity-50"
-            type="button"
-            [disabled]="favoritePending || isFavorite"
-            (click)="requestAddFavorite()"
-          >
-            {{ favoritePending ? 'Ajout...' : isFavorite ? 'Deja en favoris' : 'Favoris' }}
-          </button>
-          <button
-            *ngIf="isAuthenticated"
-            class="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[color:var(--ink-700)] transition hover:border-[color:var(--teal-600)] disabled:cursor-not-allowed disabled:opacity-50"
-            type="button"
-            [disabled]="addingApplication()"
-            (click)="addToApplications()"
-          >
-            {{ addingApplication() ? 'Ajout...' : 'Suivre cette candidature' }}
-          </button>
-          <button
-            class="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[color:var(--teal-700)] transition hover:border-[color:var(--teal-600)] disabled:cursor-not-allowed disabled:opacity-50"
-            type="button"
-            [disabled]="!job.landingPageUrl"
-            (click)="openOffer()"
-          >
-            Voir l'offre
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+               *ngIf="isAuthenticated"
+               (click)="requestAddFavorite()"
+               [disabled]="favoritePending || isFavorite"
+               class="rounded-full border border-black/10 p-2 text-[color:var(--ink-700)] transition hover:border-[color:var(--teal-600)] disabled:opacity-50"
+               [title]="isFavorite ? 'Déjà en favoris' : 'Ajouter aux favoris'"
+            >
+               <svg [class.fill-current]="isFavorite" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </button>
+            <button
+              *ngIf="isAuthenticated"
+              (click)="addToApplications()"
+              [disabled]="addingApplication()"
+              class="rounded-full bg-[color:var(--ink-950)] px-4 py-2 text-[10px] font-bold text-white transition hover:bg-black disabled:opacity-50"
+            >
+               {{ addingApplication() ? '...' : 'Postuler' }}
+            </button>
+            <button
+              class="rounded-full border border-black/10 p-2 text-[color:var(--ink-700)] transition hover:bg-black/5"
+              (click)="openOffer()"
+              title="Voir l'offre originale"
+            >
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </button>
+          </div>
         </div>
+      </div>
+      
+      <div *ngIf="errorMessage() || actionMessage()" class="mt-3">
+        <p *ngIf="errorMessage()" class="text-[10px] text-red-600">{{ errorMessage() }}</p>
+        <p *ngIf="actionMessage()" class="text-[10px] text-[color:var(--teal-700)] font-medium">{{ actionMessage() }}</p>
       </div>
     </article>
   `

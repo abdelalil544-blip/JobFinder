@@ -10,7 +10,7 @@ import { Application } from '../models/application.model';
 export class ApplicationsService {
   private readonly apiUrl = 'http://localhost:3000/applications';
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient) { }
 
   getByUser(userId: number): Observable<Application[]> {
     return this.http.get<Application[]>(`${this.apiUrl}?userId=${userId}`);
@@ -20,11 +20,11 @@ export class ApplicationsService {
     return this.http.post<Application>(this.apiUrl, application);
   }
 
-  update(id: number, application: Partial<Application>): Observable<Application> {
+  update(id: number | string, application: Partial<Application>): Observable<Application> {
     return this.http.patch<Application>(`${this.apiUrl}/${id}`, application);
   }
 
-  delete(id: number): Observable<void> {
+  delete(id: number | string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

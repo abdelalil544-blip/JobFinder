@@ -132,7 +132,8 @@
     </div>
 
     <!-- Job Cards -->
-    <div class="grid gap-4" *ngIf="!loading && jobs.length > 0">
+    <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2"
+      *ngIf="!loading && jobs.length > 0">
       <app-job-card *ngFor="let job of jobs; trackBy: trackById" [job]="job" [isAuthenticated]="!!currentUser()"
         [isFavorite]="isFavorite(job)" [favoritePending]="isAddingFavorite(job)"
         (favoriteRequested)="onAddFavorite(job)"></app-job-card>

@@ -6,6 +6,13 @@
       "lastName": "Amrani",
       "email": "sara@mail.com",
       "password": "123456"
+    },
+    {
+      "id": "edd3",
+      "firstName": "Bert",
+      "lastName": "Britt",
+      "email": "necafocic@mailinator.com",
+      "password": "Pa$$w0rd!"
     }
   ],
   "favoritesOffers": [
@@ -19,6 +26,17 @@
       "location": "Casablanca",
       "url": "https://www.themuse.com/jobs/12345",
       "datePublished": "2026-02-10T10:30:00Z"
+    },
+    {
+      "id": "1233",
+      "userId": 1,
+      "offerId": 5631782662,
+      "apiSource": "themuse",
+      "title": "Conseiller Immobilier Transaction H/F",
+      "company": "SQUARE HABITAT BRETAGNE",
+      "location": "Bégard, Guingamp",
+      "url": "https://www.adzuna.fr/land/ad/5631782662?se=-GKXPDwL8RGvhqY5UiBn7g&utm_medium=api&utm_source=15fb0370&v=D01BA1EB0B3D75FF4E9612EE725B5DD80583B70F",
+      "datePublished": "2026-02-16T13:42:50Z"
     }
   ],
   "applications": [
@@ -80,7 +98,7 @@
       "company": "W HUNT",
       "location": "Grandvillars, Belfort",
       "url": "https://www.adzuna.fr/details/5631749386?utm_medium=api&utm_source=15fb0370",
-      "status": "en_attente",
+      "status": "refuse",
       "dateAdded": "2026-02-16T11:58:21.462Z"
     },
     {
@@ -92,7 +110,7 @@
       "company": "LHH",
       "location": "France",
       "url": "https://www.adzuna.fr/details/5631749477?utm_medium=api&utm_source=15fb0370",
-      "status": "en_attente",
+      "status": "accepte",
       "dateAdded": "2026-02-16T12:07:38.199Z"
     }
   ]
