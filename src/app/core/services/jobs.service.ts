@@ -33,8 +33,6 @@ export class JobsService {
     const url = `${this.baseUrl}/${encodeURIComponent(country)}/search/${page}`;
 
     let httpParams = new HttpParams()
-      .set('app_id', environment.adzunaAppId)
-      .set('app_key', environment.adzunaAppKey)
       .set('results_per_page', resultsPerPage.toString())
       .set('content-type', 'application/json');
 
@@ -248,22 +246,10 @@ export class JobsService {
   }
 
   private handleError(error: any): Observable<never> {
-    let message = 'An unexpected error occurred. Please try again.';
+    let message = error.message || 'An unexpected error occurred. Please try again.';
 
     if (error.name === 'TimeoutError') {
-      message = 'La requete est lente. Merci de reessayer dans quelques secondes.';
-    } else if (error.status === 401) {
-      message = 'Invalid API credentials. Please check your Adzuna app_id and app_key.';
-    } else if (error.status === 403) {
-      message = 'Access denied. Please verify your Adzuna API key.';
-    } else if (error.status === 429) {
-      message = 'Rate limit exceeded (250/day). Please try again later.';
-    } else if (error.status === 0) {
-      message = 'Network error. Please check your internet connection.';
-    } else if (error.status === 404) {
-      message = 'No results found for this country/search.';
-    } else if (error.status >= 500) {
-      message = 'Adzuna service is temporarily unavailable. Please try again later.';
+      message = 'La requête est lente. Merci de réessayer dans quelques secondes.';
     }
 
     console.error('[JobsService] API error:', error);
