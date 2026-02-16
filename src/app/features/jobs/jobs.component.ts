@@ -31,7 +31,7 @@ export class JobsComponent implements OnInit, OnDestroy {
 
   currentPage = 1;
   totalPages = 1;
-  pageSize = 5;
+  pageSize = 10;
   currentUser = signal<PublicUser | null>(null);
   favoriteOfferIdsSet = signal(new Set<number>());
   addingOfferIdsSet = signal(new Set<number>());

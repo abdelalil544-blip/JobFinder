@@ -17,13 +17,13 @@ import { environment } from '../../../environments/environment';
 })
 export class JobsService {
   private readonly baseUrl = environment.adzunaBaseUrl;
-  private readonly RESULTS_PER_PAGE = 20;
+  private readonly RESULTS_PER_PAGE = 10;
   private readonly CACHE_TTL = 5 * 60 * 1000;
   private readonly REQUEST_TIMEOUT = 8000;
 
   private cache = new Map<string, { data: JobSearchResult; timestamp: number }>();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   searchJobs(params: JobSearchParams): Observable<JobSearchResult> {
     const country = (params.country || 'gb').toLowerCase();
@@ -83,7 +83,7 @@ export class JobsService {
 
     return this.http.get<AdzunaApiResponse>(url, { params: httpParams }).pipe(
       timeout(this.REQUEST_TIMEOUT),
-      map((response) => this.processResponse(response, page, resultsPerPage)),
+      map((response) => this.processResponse(response, page, resultsPerPage, params.keywords)),
       tap((result) => {
         this.cache.set(cacheKey, { data: result, timestamp: Date.now() });
       }),
@@ -94,9 +94,23 @@ export class JobsService {
   private processResponse(
     response: AdzunaApiResponse,
     page: number,
-    resultsPerPage: number
+    resultsPerPage: number,
+    keywords?: string
   ): JobSearchResult {
-    const jobs = (response.results || []).map((ad) => this.mapAdzunaJobToJob(ad));
+    let jobs = (response.results || []).map((ad) => this.mapAdzunaJobToJob(ad));
+
+    // Strict business rule: Title must contain keywords
+    if (keywords && keywords.trim()) {
+      const searchTerms = keywords.toLowerCase().trim().split(/\s+/);
+      jobs = jobs.filter(job => {
+        const title = job.title.toLowerCase();
+        return searchTerms.every(term => title.includes(term));
+      });
+    }
+
+    // Ensure sorting by date (most recent first) as required
+    jobs.sort((a, b) => new Date(b.publicationDate).getTime() - new Date(a.publicationDate).getTime());
+
     const totalResults = response.count || 0;
     const totalPages = Math.ceil(totalResults / resultsPerPage);
 
