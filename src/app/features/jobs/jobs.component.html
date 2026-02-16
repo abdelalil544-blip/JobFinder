@@ -14,11 +14,7 @@
 
   <!-- Search Form -->
   <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-    <form
-      class="p-6"
-      [formGroup]="form"
-      (ngSubmit)="onSearch()"
-    >
+    <form class="p-6" [formGroup]="form" (ngSubmit)="onSearch()">
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Keywords Field -->
         <div class="lg:col-span-1">
@@ -27,10 +23,7 @@
           </label>
           <input
             class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 transition focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-            type="text"
-            formControlName="keywords"
-            placeholder="ex: développeur frontend"
-          />
+            type="text" formControlName="keywords" placeholder="ex: développeur frontend" />
         </div>
 
         <!-- Location Field -->
@@ -40,10 +33,7 @@
           </label>
           <input
             class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 transition focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-            type="text"
-            formControlName="location"
-            placeholder="ex: Remote, Paris"
-          />
+            type="text" formControlName="location" placeholder="ex: Remote, Paris" />
         </div>
 
         <!-- Country Field -->
@@ -53,8 +43,7 @@
           </label>
           <select
             class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 transition focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-            formControlName="country"
-          >
+            formControlName="country">
             <option value="fr">France</option>
             <option value="gb">Royaume-Uni</option>
             <option value="us">États-Unis</option>
@@ -67,14 +56,14 @@
         <div class="flex items-end lg:col-span-1">
           <button
             class="w-full rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-            type="submit"
-            [disabled]="loading"
-          >
+            type="submit" [disabled]="loading">
             <span *ngIf="!loading">Rechercher</span>
             <span *ngIf="loading" class="flex items-center justify-center gap-2">
               <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
               </svg>
               Recherche...
             </span>
@@ -83,13 +72,12 @@
       </div>
 
       <!-- Error Message -->
-      <div
-        class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800"
-        *ngIf="form.touched && form.invalid"
-      >
+      <div class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800" *ngIf="form.touched && form.invalid">
         <div class="flex items-center gap-2">
           <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+            <path fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+              clip-rule="evenodd" />
           </svg>
           Merci de renseigner un pays.
         </div>
@@ -103,7 +91,8 @@
     <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-gray-50 px-5 py-4">
       <div class="flex items-center gap-3">
         <p class="text-sm font-medium text-gray-700">
-          Page <span class="font-bold text-gray-900">{{ currentPage }}</span> sur <span class="font-bold text-gray-900">{{ totalPages }}</span>
+          Page <span class="font-bold text-gray-900">{{ currentPage }}</span> sur <span
+            class="font-bold text-gray-900">{{ totalPages }}</span>
         </p>
       </div>
 
@@ -119,13 +108,13 @@
     </div>
 
     <!-- Error Message -->
-    <div
-      class="rounded-xl border border-red-200 bg-red-50 p-4"
-      *ngIf="errorMessage"
-    >
+    <div class="rounded-xl border border-red-200 bg-red-50 p-4" *ngIf="errorMessage">
       <div class="flex items-start gap-3">
-        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+        <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+          fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+            clip-rule="evenodd" />
         </svg>
         <p class="text-sm font-medium text-red-800">{{ errorMessage }}</p>
       </div>
@@ -144,23 +133,19 @@
 
     <!-- Job Cards -->
     <div class="grid gap-4" *ngIf="!loading && jobs.length > 0">
-      <app-job-card
-        *ngFor="let job of jobs; trackBy: trackById"
-        [job]="job"
-        [isAuthenticated]="!!currentUser"
-        [isFavorite]="isFavorite(job)"
-        [favoritePending]="isAddingFavorite(job)"
-        (favoriteRequested)="onAddFavorite(job)"
-      ></app-job-card>
+      <app-job-card *ngFor="let job of jobs; trackBy: trackById" [job]="job" [isAuthenticated]="!!currentUser()"
+        [isFavorite]="isFavorite(job)" [favoritePending]="isAddingFavorite(job)"
+        (favoriteRequested)="onAddFavorite(job)"></app-job-card>
     </div>
 
     <!-- Empty State -->
     <div
       class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-16"
-      *ngIf="!loading && jobs.length === 0 && !errorMessage"
-    >
-      <svg class="mb-4 h-16 w-16 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      *ngIf="!loading && jobs.length === 0 && !errorMessage">
+      <svg class="mb-4 h-16 w-16 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
       <h3 class="mb-2 text-lg font-semibold text-gray-900">Aucune offre trouvée</h3>
       <p class="max-w-sm text-center text-sm text-gray-600">
@@ -169,39 +154,29 @@
     </div>
 
     <!-- Pagination -->
-    <nav
-      class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4"
-      *ngIf="totalPages > 1 && !loading"
-    >
+    <nav class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4"
+      *ngIf="totalPages > 1 && !loading">
       <!-- Previous Button -->
       <button
         class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
-        type="button"
-        (click)="goToPage(currentPage - 1)"
-        [disabled]="currentPage === 1"
-      >
+        type="button" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
         <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+          <path fill-rule="evenodd"
+            d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+            clip-rule="evenodd" />
         </svg>
         Précédent
       </button>
 
       <!-- Page Numbers -->
       <div class="flex flex-wrap items-center justify-center gap-2">
-        <button
-          *ngFor="let page of pages"
+        <button *ngFor="let page of pages"
           class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-          [class.bg-teal-600]="page === currentPage"
-          [class.text-white]="page === currentPage"
-          [class.shadow-sm]="page === currentPage"
-          [class.border]="page !== currentPage"
-          [class.border-gray-300]="page !== currentPage"
-          [class.bg-white]="page !== currentPage"
-          [class.text-gray-700]="page !== currentPage"
-          [class.hover:bg-gray-50]="page !== currentPage"
-          type="button"
-          (click)="goToPage(page)"
-        >
+          [class.bg-teal-600]="page === currentPage" [class.text-white]="page === currentPage"
+          [class.shadow-sm]="page === currentPage" [class.border]="page !== currentPage"
+          [class.border-gray-300]="page !== currentPage" [class.bg-white]="page !== currentPage"
+          [class.text-gray-700]="page !== currentPage" [class.hover:bg-gray-50]="page !== currentPage" type="button"
+          (click)="goToPage(page)">
           {{ page }}
         </button>
       </div>
@@ -209,13 +184,12 @@
       <!-- Next Button -->
       <button
         class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
-        type="button"
-        (click)="goToPage(currentPage + 1)"
-        [disabled]="currentPage === totalPages"
-      >
+        type="button" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
         Suivant
         <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+          <path fill-rule="evenodd"
+            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+            clip-rule="evenodd" />
         </svg>
       </button>
     </nav>

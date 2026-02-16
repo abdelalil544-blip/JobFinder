@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { debounceTime, distinctUntilChanged, filter, finalize, map, take } from 'rxjs';
@@ -32,9 +32,9 @@ export class JobsComponent implements OnInit, OnDestroy {
   currentPage = 1;
   totalPages = 1;
   pageSize = 5;
-  currentUser: PublicUser | null = null;
-  private favoriteOfferIdsSet = new Set<number>();
-  private addingOfferIdsSet = new Set<number>();
+  currentUser = signal<PublicUser | null>(null);
+  favoriteOfferIdsSet = signal(new Set<number>());
+  addingOfferIdsSet = signal(new Set<number>());
 
   private readonly AUTO_SEARCH_DELAY = 400;
   private lastCriteria: JobSearchParams | null = null;
@@ -65,21 +65,24 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.authSub = this.authService.currentUser$
       .pipe(distinctUntilChanged((a, b) => a?.id === b?.id))
       .subscribe((user) => {
-        this.currentUser = user;
+        this.currentUser.set(user);
 
         if (user) {
           this.store.dispatch(FavoritesActions.loadFavorites({ userId: user.id }));
         } else {
           this.store.dispatch(FavoritesActions.clearFavorites());
         }
+        this.cdr.detectChanges();
       });
 
     this.favoriteIdsSub = this.store.select(selectFavoriteOfferIds).subscribe((offerIds) => {
-      this.favoriteOfferIdsSet = new Set(offerIds);
+      this.favoriteOfferIdsSet.set(new Set(offerIds));
+      this.cdr.detectChanges();
     });
 
     this.addingOfferIdsSub = this.store.select(selectAddingOfferIds).subscribe((offerIds) => {
-      this.addingOfferIdsSet = new Set(offerIds);
+      this.addingOfferIdsSet.set(new Set(offerIds));
+      this.cdr.detectChanges();
     });
 
     this.fetchJobs(1, this.buildInitialCriteria(), true);
@@ -168,20 +171,20 @@ export class JobsComponent implements OnInit, OnDestroy {
   }
 
   onAddFavorite(job: Job): void {
-    if (!this.currentUser) {
+    if (!this.currentUser()) {
       return;
     }
 
     const offerId = this.toOfferId(job);
-    if (offerId === null || this.favoriteOfferIdsSet.has(offerId)) {
+    if (offerId === null || this.favoriteOfferIdsSet().has(offerId)) {
       return;
     }
 
     this.store.dispatch(
       FavoritesActions.addFavorite({
-        userId: this.currentUser.id,
+        userId: this.currentUser()!.id,
         favorite: {
-          userId: this.currentUser.id,
+          userId: this.currentUser()!.id,
           offerId,
           apiSource: 'themuse',
           title: job.title,
@@ -196,12 +199,12 @@ export class JobsComponent implements OnInit, OnDestroy {
 
   isFavorite(job: Job): boolean {
     const offerId = this.toOfferId(job);
-    return offerId !== null && this.favoriteOfferIdsSet.has(offerId);
+    return offerId !== null && this.favoriteOfferIdsSet().has(offerId);
   }
 
   isAddingFavorite(job: Job): boolean {
     const offerId = this.toOfferId(job);
-    return offerId !== null && this.addingOfferIdsSet.has(offerId);
+    return offerId !== null && this.addingOfferIdsSet().has(offerId);
   }
 
   private fetchJobs(

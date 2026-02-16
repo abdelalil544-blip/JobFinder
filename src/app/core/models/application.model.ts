@@ -1,10 +1,10 @@
 export type ApplicationStatus = 'en_attente' | 'accepte' | 'refuse';
 
 export interface Application {
-  id: number;
-  userId: number;
-  offerId: number;
-  apiSource: 'themuse';
+  id: number | string;
+  userId: number | string;
+  offerId: number | string;
+  apiSource: 'themuse' | 'adzuna';
   title: string;
   company: string;
   location: string;

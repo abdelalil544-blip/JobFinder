@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { EMPTY, finalize, switchMap, take } from 'rxjs';
 
@@ -38,8 +38,8 @@ import { Job } from '../../core/models/job.model';
         <span *ngIf="job.level">Niveau: {{ job.level }}</span>
       </div>
 
-      <p class="mt-4 text-xs text-[color:#b42318]" *ngIf="errorMessage">{{ errorMessage }}</p>
-      <p class="mt-4 text-xs text-[color:var(--teal-700)]" *ngIf="actionMessage">{{ actionMessage }}</p>
+      <p class="mt-4 text-xs text-[color:#b42318]" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+      <p class="mt-4 text-xs text-[color:var(--teal-700)]" *ngIf="actionMessage()">{{ actionMessage() }}</p>
 
       <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[color:var(--ink-500)]">
         <span>Publie le {{ job.publicationDate | date: 'mediumDate' }}</span>
@@ -54,12 +54,13 @@ import { Job } from '../../core/models/job.model';
             {{ favoritePending ? 'Ajout...' : isFavorite ? 'Deja en favoris' : 'Favoris' }}
           </button>
           <button
+            *ngIf="isAuthenticated"
             class="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[color:var(--ink-700)] transition hover:border-[color:var(--teal-600)] disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
-            [disabled]="addingApplication"
+            [disabled]="addingApplication()"
             (click)="addToApplications()"
           >
-            {{ addingApplication ? 'Ajout...' : 'Candidature' }}
+            {{ addingApplication() ? 'Ajout...' : 'Suivre cette candidature' }}
           </button>
           <button
             class="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-[color:var(--teal-700)] transition hover:border-[color:var(--teal-600)] disabled:cursor-not-allowed disabled:opacity-50"
@@ -81,15 +82,15 @@ export class JobCardComponent {
   @Input() favoritePending = false;
   @Output() favoriteRequested = new EventEmitter<void>();
 
-  actionMessage = '';
-  errorMessage = '';
-  addingApplication = false;
+  actionMessage = signal('');
+  errorMessage = signal('');
+  addingApplication = signal(false);
 
   constructor(
     private readonly authService: AuthService,
     private readonly applicationsService: ApplicationsService,
     private readonly router: Router
-  ) {}
+  ) { }
 
   openOffer(): void {
     if (!this.job.landingPageUrl) {
@@ -106,7 +107,7 @@ export class JobCardComponent {
   }
 
   addToApplications(): void {
-    if (this.addingApplication) {
+    if (this.addingApplication()) {
       return;
     }
 
@@ -116,16 +117,16 @@ export class JobCardComponent {
       return;
     }
 
-    const offerId = this.toOfferId();
-    if (offerId === null) {
-      this.errorMessage = 'Impossible de creer cette candidature.';
-      this.actionMessage = '';
+    const offerId = this.job.id;
+    if (!offerId) {
+      this.errorMessage.set('Impossible de creer cette candidature.');
+      this.actionMessage.set('');
       return;
     }
 
-    this.errorMessage = '';
-    this.actionMessage = '';
-    this.addingApplication = true;
+    this.errorMessage.set('');
+    this.actionMessage.set('');
+    this.addingApplication.set(true);
 
     this.applicationsService
       .getByUser(currentUser.id)
@@ -133,18 +134,18 @@ export class JobCardComponent {
         take(1),
         switchMap((applications) => {
           const alreadyAdded = applications.some(
-            (application) => application.offerId === offerId && application.apiSource === 'themuse'
+            (application) => application.offerId === offerId && application.apiSource === 'adzuna'
           );
 
           if (alreadyAdded) {
-            this.actionMessage = 'Cette offre est deja dans vos candidatures.';
+            this.actionMessage.set('Cette offre est deja dans vos candidatures.');
             return EMPTY;
           }
 
           return this.applicationsService.create({
             userId: currentUser.id,
             offerId,
-            apiSource: 'themuse',
+            apiSource: 'adzuna',
             title: this.job.title,
             company: this.job.company.name,
             location: this.job.location,
@@ -154,23 +155,19 @@ export class JobCardComponent {
           });
         }),
         finalize(() => {
-          this.addingApplication = false;
+          this.addingApplication.set(false);
         })
       )
       .subscribe({
         next: () => {
-          this.actionMessage = 'Candidature ajoutee.';
-          this.errorMessage = '';
+          this.actionMessage.set('Candidature ajoutee.');
+          this.errorMessage.set('');
         },
         error: (error: Error) => {
-          this.errorMessage = error.message || 'Impossible de creer cette candidature.';
-          this.actionMessage = '';
+          this.errorMessage.set(error.message || 'Impossible de creer cette candidature.');
+          this.actionMessage.set('');
         }
       });
   }
 
-  private toOfferId(): number | null {
-    const parsedId = Number(this.job.id);
-    return Number.isFinite(parsedId) ? parsedId : null;
-  }
 }
