@@ -250,13 +250,7 @@ export class JobsComponent implements OnInit, OnDestroy {
           if (this.requestId !== currentRequestId) {
             return;
           }
-          const sorted = [...response.jobs].sort((a, b) => {
-            const dateA = a.publicationDate ? new Date(a.publicationDate).getTime() : 0;
-            const dateB = b.publicationDate ? new Date(b.publicationDate).getTime() : 0;
-            return dateB - dateA;
-          });
-
-          this.jobs = sorted;
+          this.jobs = response.jobs;
           this.totalPages = response.totalPages || 1;
           this.currentPage = response.currentPage || page;
           this.scheduleViewUpdate();
