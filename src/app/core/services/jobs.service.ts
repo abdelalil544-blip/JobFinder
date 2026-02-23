@@ -1,7 +1,7 @@
 ﻿import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, map, tap, timeout } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, timeout } from 'rxjs/operators';
 
 import {
   AdzunaApiResponse,
@@ -18,10 +18,7 @@ import { environment } from '../../../environments/environment';
 export class JobsService {
   private readonly baseUrl = environment.adzunaBaseUrl;
   private readonly RESULTS_PER_PAGE = 10;
-  private readonly CACHE_TTL = 5 * 60 * 1000;
   private readonly REQUEST_TIMEOUT = 8000;
-
-  private cache = new Map<string, { data: JobSearchResult; timestamp: number }>();
 
   constructor(private http: HttpClient) { }
 
@@ -72,19 +69,9 @@ export class JobsService {
       httpParams = httpParams.set('salary_min', params.salaryMin.toString());
     }
 
-    const cacheKey = `${url}?${httpParams.toString()}`;
-
-    const cached = this.cache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-      return of(cached.data);
-    }
-
     return this.http.get<AdzunaApiResponse>(url, { params: httpParams }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       map((response) => this.processResponse(response, page, resultsPerPage, params.keywords)),
-      tap((result) => {
-        this.cache.set(cacheKey, { data: result, timestamp: Date.now() });
-      }),
       catchError((error) => this.handleError(error))
     );
   }
